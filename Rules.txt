@@ -1,0 +1,27 @@
+3D Chess Rules
+
+Boards :
+- There are 3 main boards (4×4 squares), and 4 attack boards.
+- The attack boards can move on the top of any corner of a main board.
+- The main board are located on levels 2, 4 and 6.
+- The attack boards can go on level 3, 5 and 7.
+- The first main board is called the White Boards, the second is the Neutral Board and the last one (on level 6) is the Black Board.
+- Each main board has 2 common rows with the board below. 
+- Each attack board is linked to a corner. Left corners of the main boards are called Queen Levels (QL), and right corners are King Levels (KL). They are named like this because both Kings and both Queens are respectively on the same side of the boards.
+- Therefore, any attack board as a common coordinates (on X and Y) with the main board on which it is attached.
+- At the beginning, 2 attack boards are located on the extrem corners of each Black and White Board. That gives for each attack board an original owner, depending on its original position.
+- An attack board can be moved to an adjacent corner only if : (http://home.arcor.de/jens.meder/3dschach/image6.gif)
+	- There is no piece on the board. Only the original owner of board can then move it.
+	- There is only one piece on the board. Only the owner of the pawn can then move the board.
+
+
+Piece movements :
+- Original position of the pieces : http://home.arcor.de/jens.meder/3dschach/image5.gif
+- Any piece moves like on a normal chess game, except it can go on any board, at any level. 
+- A piece, on any individual square, blocks the abiltiy of other pieces to move at all levels further than its location. But the moving piece may land above or below the occupied square and continue its move on the next turn.
+- A piece cannot go straight up of straight down without moving horizontally.
+- If a pawn reaches the furthest row of the chess game (on a main board or an attack board), it is promoted to another rank, which can be Queen, Rook, Bishop or Knight.
+
+The game is over when a player's king is captured by the ennemy, or when a player has only his king left alive.
+
+
