@@ -4,15 +4,23 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import chessGUI.AbstractView;
 
+/**
+ * AbstractPlayer used to manage the human and the bot player the same way in a part of the program.
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public abstract class AbstractPlayer 
 {
 	/* Attributs */
-	protected String name;
-	protected Color color;
-	protected static int numberOfPlayers = 0;
+	private String name;
+	private Color color;
+	private static int numberOfPlayers = 0;
 	
-	protected List<PlayerListener> listPlayerListener = new ArrayList<PlayerListener>();
+	private List<PlayerListener> listPlayerListener = new ArrayList<PlayerListener>();
 
 	/* Constructor(s) */
 	public AbstractPlayer(String name) {
@@ -24,10 +32,12 @@ public abstract class AbstractPlayer
 		else
 			color = Color.BLACK;
 	}
+	
 	public AbstractPlayer(String name, Color color) {
 		this.name = name;
 		this.color = color;
 	}
+	
 	public AbstractPlayer(){
 		this("Player ");
 		if(numberOfPlayers%2==1)
@@ -52,15 +62,17 @@ public abstract class AbstractPlayer
 	}
 
 	/* Listener functions */
-	public void addPlayerListener(PlayerListener abstractModel)
+	public void addPlayerListener(PlayerListener window)
 	{
-		this.listPlayerListener.add(abstractModel);
+		this.listPlayerListener.add(window);
 	}
 	public void fireHasPlayed() {
 		for (PlayerListener listener : this.listPlayerListener) {
 			listener.hasPlayed();
 		}
 	}
+	
+	@Override
 	public String toString() {
 		return name + " (" + getClass().getName() + ") : " + color;
 	}

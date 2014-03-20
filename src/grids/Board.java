@@ -1,20 +1,26 @@
 package grids;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.TreeSet;
-
 import Global.Coord;
 import Pieces.Piece;
 
+/**
+ * The board contains the 4 attack grids (little) and the 3 fixed grids (big)
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class Board extends HashSet<Grid>{
 	
-	public void Board() {
+	public Board() {
 		
 	}
+	/**
+	 * @return a set of the movable grids
+	 */
 	public Board getAttackBoards() {
 		Board tree = new Board();
 		for(Grid g : this) {
@@ -24,6 +30,9 @@ public class Board extends HashSet<Grid>{
 		return tree;
 	}
 	
+	/**
+	 * @return a set of grids located at odd height (should be the same as {@link #getAttackBoards()}
+	 */
 	public Board getMovableLevels() {
 		Board tree = new Board();
 		for(Grid g : this) {
@@ -33,10 +42,11 @@ public class Board extends HashSet<Grid>{
 		return tree;
 	}
 	
-	
-	
-	
-	
+	/**
+	 * Get the grid on which a specific coordinates is located
+	 * @param c
+	 * @return the grid on which c is located or null if the coord is not on any grid
+	 */
 	public Grid getGridContaining(Coord c) {
 		Iterator<Grid> it = this.iterator();
 		Grid g = null, tmp = null;
@@ -46,18 +56,13 @@ public class Board extends HashSet<Grid>{
 				g = tmp;
 		}
 		return g;
-	}
+	}	
 	
-	public Corner getCornerOfPiece(Piece p) {
-		Grid g = getGridContaining(p.getCoordinates());
-		if(g.isAnAttackBoard()) {
-			return g.getCorner();
-		}
-		else
-			return null;
-	}
-	
-	
+	/**
+	 * Get the grid located at a corner
+	 * @param cor : corner
+	 * @return the grid if it exists, null if there is no grid at this corner
+	 */
 	public Grid getGridAtCorner(Corner cor) {
 		Board treeAttack = this.getAttackBoards();
 		Iterator<Grid> it = treeAttack.iterator();
@@ -73,7 +78,9 @@ public class Board extends HashSet<Grid>{
 	}
 	
 	
-	
+	/**
+	 * @return set of the fixed grids
+	 */
 	public Board getFixedLevels() {
 		Board tree = new Board();
 		for(Grid g : this) {
@@ -83,20 +90,10 @@ public class Board extends HashSet<Grid>{
 		return tree;
 	}
 	
-	public ArrayList<Grid> getGridAtLevel(int level) {
-		ArrayList<Grid> list = new ArrayList<Grid>();
-		for(Grid g : this) {
-			if(g.getLevel() == level)
-				list.add(g);
-		}
-		return list;
-	}
-	
-	
-	public Grid getGridAtCorner(String str) {
-		return getGridAtCorner(new Corner(str));
-	}
-	
+	/**
+	 * Add a grid to the board
+	 * @param g
+	 */
 	public void addGrid(Grid g) {
 		this.add(g);
 	}

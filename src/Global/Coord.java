@@ -2,56 +2,14 @@ package Global;
 
 
 import chessGUI.CoordGraph;
-
+/**
+ * Coord class representing a 3D coordinate of a piece or a square on the board.
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class Coord implements Comparable<Coord>{
-	/*protected int x;
-	protected int y;
-	
-	public int getX() {
-		return x;
-	}
-	public void setX(int x) {
-		this.x = x;
-	}
-	public int getY() {
-		return y;
-	}
-	public void setY(int y) {
-		this.y = y;
-	}
-	
-	public Coord(int x, int y) {
-		this.x = x;
-		this.y = y;
-	}
-	public Coord(Coord c) {
-		this.x = c.x;
-		this.y = c.y;
-	}
-	public String toString() {
-		return "("+x+";"+y+")";
-	}
-	public boolean equals(Coord c) {
-		return (this.x == c.x && this.y == c.y);
-	}
-	public int compareTo(Coord arg0) {
-	    if (this.x < arg0.x || (this.x == arg0.x && this.y < arg0.y))
-	        return -1;
-	    else if (this.x == arg0.x && this.y == arg0.y)
-	        return 0;
-	    else
-	        return 1;
-	}
-	
-	public Coord plus(Coord c) {
-		return new Coord(x + c.x, y + c.y);
-	}
-	public boolean isPositive() {
-		return (x >= 0 && y >= 0);
-	}
-	public boolean isOnBoard() {
-		return (x >= 0 && x < 10 && y >= 0 && y < 10);
-	}*/
 
 	/* Attributs */
 	private int x;
@@ -63,17 +21,9 @@ public class Coord implements Comparable<Coord>{
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		// TODO Auto-generated constructor stub
 	}
 	public Coord() {
 		
-		// TODO Auto-generated constructor stub
-	}
-	public Coord(Coord c) {
-		this.x = c.x;
-		this.y = c.y;
-		this.z = c.z;
-		// TODO Auto-generated constructor stub
 	}
 
 	/* Getters & Setters */
@@ -99,10 +49,17 @@ public class Coord implements Comparable<Coord>{
 	}
 
 	/* Functions */
+	/**
+	 * Convert the Coord into a string in order to print it or display it in the UI
+	 */
 	@Override
 	public String toString() {
 		return "(" + x + "," + y + "," + z + ")";
 	}
+	/**
+	 * Convert the 3D coord of the model into a 2D coordinate used by the view
+	 * @return
+	 */
 	public CoordGraph toCoordGraph() {
 		int i,j;
 		i = x;
@@ -120,13 +77,24 @@ public class Coord implements Comparable<Coord>{
 		}
 		return new CoordGraph(i,j);
 	}
-	
+	/**
+	 * Check if 2 coordinates are equal
+	 * @param c
+	 * @return true if their 3 components are equals
+	 */
 	public boolean equals(Coord c) {
 		return (this.z == c.z && this.x == c.x && this.y == c.y);
-	}	
-	public int compare(Coord o1, Coord o2) {
-		return o1.compareTo(o2);
 	}
+	
+	/**
+	 * Compare 2 coordinates by looking at the 3 components.<br>
+	 * The first one that is looked is the z coordinate (height), then the x and y.
+	 * @param c : coordinate that will be compared to this
+	 * @return 0 if both are equal
+	 * 			-1 if this is "lesser" than c
+	 * 			1 if this is greater than c 
+	 */
+	@Override
 	public int compareTo(Coord c) {
 		if(this.z == c.z) {
 			if(this.x < c.x)
@@ -147,22 +115,36 @@ public class Coord implements Comparable<Coord>{
 		else return 1;
 	}
 	
+	/**
+	 * Add a coordinate to another
+	 * @param c
+	 * @return a new coordinates corresponding to the addition of the 3 components of the 2 coords
+	 */
 	public Coord plus(Coord c) {
 		return new Coord(x + c.x, y + c.y, z + c.z);
 	}
+	/**
+	 * Subtraction of the components of c to this in order to create another coord
+	 * @param c
+	 * @return the newly created coord = this - c on the 3 axis
+	 */
 	public Coord minus(Coord c) {
 		return new Coord(x - c.x, y - c.y, z - c.z);
 	}
-	public void translate(Coord c) {
-		x += c.x;
-		y += c.y;
-		z += c.z;
-	}
-
+	
+	/**
+	 * Check if the coordinate is on a movable grid or on a fixed grid by looking if its height is odd or even
+	 * @return true if z is odd
+	 */
 	public boolean isAnAttackBoard() {
 		return (z%2 == 1);
 	}
-	public boolean isInSpace() {	/*coord is in the total space of all the game. Doesn't mean the square actually exists ! */
+	/**
+	 * Quick method to know if a coordinates is within the boundaries of the board.<br>
+	 * <b>Be carefull</b> : this method only looks at the big cube bounding the board, it <b>doesn't mean the square actually exists  on a grid !</b> 
+	 * @return true if the coord is within the boundaries of the board (!)
+	 */
+	public boolean isInSpace() {
 		return (x >= 0 && x < 10 && y >= 0 && y < 10 && z > 0 && z < 8);
 	}	
 }

@@ -2,15 +2,25 @@ package Pieces;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.NavigableSet;
-
 import Global.Coord;
 import Players.AbstractPlayer;
 
+/**
+ * List of pieces.<br>
+ * Extends an ArrayList<Piece> but adds some methods specific to the game
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class ListPieces extends ArrayList<Piece> {
 	
+	/**
+	 * Get the pieces of a specific player.
+	 * @param player
+	 * @return list of pieces
+	 */
 	public ListPieces getPiecesOf(AbstractPlayer player) {
 		ListPieces set = new ListPieces();
 		Color playerColor = player.getColor();
@@ -20,7 +30,12 @@ public class ListPieces extends ArrayList<Piece> {
 		}
 		return set;
 	}
-	public ListPieces getLivingPieces(ListPieces set) {
+	/**
+	 * Get the list of pieces still alive from a set of pieces
+	 * @param set
+	 * @return list of pieces
+	 */
+	public static ListPieces getLivingPieces(ListPieces set) {
 		ListPieces livingPieces = new ListPieces();
 		for(Piece p : set) {
 			if(p.isAlive())
@@ -29,15 +44,10 @@ public class ListPieces extends ArrayList<Piece> {
 		return livingPieces;
 	}
 	
-	public ListPieces getDeadPieces(ListPieces set) {
-		ListPieces deadPieces = new ListPieces();
-		for(Piece p : set) {
-			if(!p.isAlive())
-				deadPieces.add(p);
-		}
-		return deadPieces;
-	}
-	
+	/**
+	 * Get the list of living pieces
+	 * @return set of pieces
+	 */
 	public ListPieces getLivingPieces() {
 		ListPieces livingPieces = new ListPieces();
 		for(Piece p : this) {
@@ -47,6 +57,10 @@ public class ListPieces extends ArrayList<Piece> {
 		return livingPieces;
 	}
 	
+	/**
+	 * Get the list of dead pieces
+	 * @return
+	 */
 	public ListPieces getDeadPieces() {
 		ListPieces deadPieces = new ListPieces();
 		for(Piece p : this) {
@@ -55,6 +69,11 @@ public class ListPieces extends ArrayList<Piece> {
 		}
 		return deadPieces;
 	}
+	/**
+	 * Get the piece located at c within the list
+	 * @param c
+	 * @return a piece if one is found, null otherwise
+	 */
 	public Piece getPieceAt(Coord c) {
 		Piece pieceAt = null;
 		Iterator<Piece> it = this.iterator();
@@ -70,16 +89,12 @@ public class ListPieces extends ArrayList<Piece> {
 		}
 		return pieceAt;
 	}
-	public boolean putPieceAt(Piece p, Coord c) {
-		if(p != null) {
-			p.setCoordinates(c);
-			this.add(p);
-			return true;
-		}
-		else
-			return false;
-	}
-
+	
+	/**
+	 * Get the king of a specific player
+	 * @param player
+	 * @return the king of the player, null if it is dead
+	 */
 	public Piece getKing(AbstractPlayer player) {
 		ListPieces piecesOf = this.getPiecesOf(player);
 		for(Piece p : piecesOf) {

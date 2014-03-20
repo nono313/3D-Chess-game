@@ -4,12 +4,17 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Insets;
-import java.awt.image.ImageObserver;
-
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
+/**
+ * JPanelImage is used to display each position of the chess board on the UI.<br>
+ * Each square of the board has a background color represented by a coloured layout.
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class JPanelImage extends JPanel
 {
 	/* Attributs */
@@ -28,13 +33,10 @@ public class JPanelImage extends JPanel
 	{
 		((FlowLayout) this.getLayout()).setVgap(0);
 	}	
-	public JPanelImage(ImageIcon imageIcon)
-	{		
-		this.imageIcon = imageIcon;
-		((FlowLayout) this.getLayout()).setVgap(0);
-	}
 
 	/* Paint method */
+
+	@Override
 	public void paintComponent(Graphics g)
 	{		
 		if(imageIcon != null)
@@ -55,6 +57,11 @@ public class JPanelImage extends JPanel
 	}
 
 	/* ColoredLayout methods */	
+	
+	/**
+	 * Create a JPanel and give it a background color
+	 * @param color
+	 */
 	public void addColoredLayout(Color color) {
 		JPanel upperLayout = new JPanel();
 		
@@ -63,6 +70,10 @@ public class JPanelImage extends JPanel
 		
 		this.add(upperLayout);
 	}
+	
+	/**
+	 * Remove the colored layout from this
+	 */
 	public void cleanColoredLayout() 
 	{
 		if(this.getComponentCount() >= 1)

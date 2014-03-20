@@ -5,7 +5,6 @@ import grids.Corner;
 import grids.Grid;
 
 import java.awt.Color;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -20,20 +19,33 @@ import Global.Coord;
 import Pieces.ListPieces;
 import Pieces.Piece;
 
-
+/**
+ * Bot implementation of AbstractPlayer.<br>
+ * The movement are made quite randomly, with a preference given to attack when possible.
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class BotPlayer extends AbstractPlayer {
 	
 	/* Constructors */
 	public BotPlayer(String name) {
 		super(name);
 	}
-	public BotPlayer(String name, Color color) {
-		super(name, color);
-	}
+	
 	public BotPlayer() {
 		super();
 	}
-	public boolean play(AbstractModel model, AbstractView view, MouseManager controller, int speed) {
+	
+	/**
+	 * The bot plays its turn
+	 * @param model
+	 * @param view
+	 * @param controller
+	 * @param speed : integer 
+	 */
+	public void play(AbstractModel model, AbstractView view, MouseManager controller, int speed) {
 		Piece randomPiece = null;
 		TreeSet<Coord> treeMoves;
 		Board movableGrids;
@@ -41,7 +53,9 @@ public class BotPlayer extends AbstractPlayer {
 		Random rnd = new Random();
 		movableGrids = model.getMovableGrids();
 		
-		ListPieces piecesOf = model.getPieces().getLivingPieces(model.getPieces().getPiecesOf(this));
+		// Get list of living pieces belonging to the bot
+		ListPieces piecesOf = ListPieces.getLivingPieces(model.getPieces().getPiecesOf(this));
+		// Check if the enemy is in a check position
 		if(model.isCheck(model.getOtherPlayer(model.getCurrentPlayer()))) {
 			Piece king = model.getPieces().getKing(model.getOtherPlayer(model.getCurrentPlayer()));
 			Iterator<Piece> it = model.getPieces().getPiecesOf(model.getCurrentPlayer()).iterator();
@@ -49,6 +63,7 @@ public class BotPlayer extends AbstractPlayer {
 			while(it.hasNext() && randomPiece == null) {
 				Piece p = it.next();
 				if(model.attackSquares(p).contains(king.getCoordinates())) {
+					//Force bot to attack the king
 					randomPiece = p;
 					randomCoord = king.getCoordinates();
 				}
@@ -58,30 +73,27 @@ public class BotPlayer extends AbstractPlayer {
 		
 		if(randomPiece == null)
 		{		
+			/*
+			 * If at least one grid is movable from the bot point of view, it has 30% of chance to move a grid.
+			 */
 			if(rnd.nextInt(10) < 3 && movableGrids.size() > 0) {
 				Grid gToMove = (Grid) selectAny(movableGrids);
 				Corner tmpCorn = (Corner)selectAny(model.accessibleCornerForGrid(gToMove));
-				//System.out.println("================================================================= : " + gToMove.toString() + " / " +tmpCorn);
 				controller.moveGridTo(gToMove, tmpCorn);
 			}
 			else {
+				// Move of a piece
 				do {
 					randomPiece = selectAttackPiece(model, piecesOf);
 					if(randomPiece == null) {
 						randomPiece = selectMovablePiece(model, piecesOf);
 					}
 					treeMoves = model.accessibleSquares(randomPiece);
-					//System.out.println("tree moves : " + treeMoves);
 				}while(treeMoves.size() == 0);
 				
-					
-				
-				//System.out.println("random piece : " + randomPiece);
-				//System.out.println("treeMoves : " + treeMoves);
 				Set<Coord> attackCoords = model.attackSquares(treeMoves);
-				//System.out.println(randomPiece);
+				// 80% of luck for the piece to attack (if a target is reachable)
 				if(attackCoords.size() > 0 && new Random().nextInt(10) < 8) {
-					//System.out.println("select any coord");
 					randomCoord = (Coord) selectAny(attackCoords);
 				}
 				else
@@ -89,30 +101,26 @@ public class BotPlayer extends AbstractPlayer {
 			}
 		}
 		if(randomPiece != null) {
-			//System.out.println("random :\t" + randomCoord);
 			Color backgroundColor = view.getCaseFrom3DCoords(randomPiece.getCoordinates()).getBackground();
+			// Background of the selected piece is changed to purple for the duration of the movement
 			view.getCaseFrom3DCoords(randomPiece.getCoordinates()).setBackground(new Color(255,0,255, 100));
 			view.getCaseFrom3DCoords(randomPiece.getCoordinates()).repaint();
+			// Sleep in order to limit the speed of movement on the piece and let the user see what piece is selected and where it is moved
 			try {
 				Thread.sleep(speed, 0);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			view.getCaseFrom3DCoords(randomPiece.getCoordinates()).setBackground(backgroundColor);
 			view.getCaseFrom3DCoords(randomPiece.getCoordinates()).repaint();
 			backgroundColor = view.getCaseFrom3DCoords(randomCoord).getBackground();
 			view.getCaseFrom3DCoords(randomCoord).setBackground(new Color(255,0,255));
-			/*view.movePieceFromCoords(randomPiece.getCoordinates().toCoordGraph(), randomCoord.toCoordGraph());*/
-			/*view.piecesCleaning();
-			model.moveFromCoordTo(randomPiece.getCoordinates(), randomCoord);
-			view.piecesPlacement();*/
 			controller.moveFromTo(randomPiece.getCoordinates(), randomCoord);
 			view.getCaseFrom3DCoords(randomCoord).repaint();
+			// Like before
 			try {
 				Thread.sleep(speed, 0);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			view.getCaseFrom3DCoords(randomCoord).setBackground(backgroundColor);
@@ -120,8 +128,12 @@ public class BotPlayer extends AbstractPlayer {
 			
 		}
 		this.fireHasPlayed();
-		return true;		
 	}
+	/**
+	 * Random selection of an element in a set
+	 * @param set
+	 * @return the element selected
+	 */
 	private Object selectAny(Set set) {
 		int size = set.size();
 		Random rndGenerator = new Random();
@@ -136,9 +148,14 @@ public class BotPlayer extends AbstractPlayer {
 			    i = i + 1;
 			}
 		}
-		//System.out.println("SELECT ANY NULL");
 		return null;
 	}
+	
+	/**
+	 * Random selection of an element in a list
+	 * @param list
+	 * @return the element selected
+	 */
 	private Object selectAny(List list) {
 		int size = list.size();
 		Random rndGenerator = new Random();
@@ -151,6 +168,13 @@ public class BotPlayer extends AbstractPlayer {
 		}
 		return null;
 	}
+	
+	/**
+	 * Select 'randomly' a piece that can attack
+	 * @param model
+	 * @param set
+	 * @return the piece
+	 */
 	private Piece selectAttackPiece(AbstractModel model, ListPieces set) {
 		ListPieces tmpSet = new ListPieces();
 		tmpSet.addAll(set);
@@ -162,11 +186,14 @@ public class BotPlayer extends AbstractPlayer {
 		}while(tmpSet.size() > 0 && model.attackableSquares(p).size() == 0);
 		return (tmpSet.size() == 0) ? null : p;
 	}
+	/**
+	 * Select 'randomly' a piece that can move (without necessary attacking)
+	 * @param model
+	 * @param set
+	 * @return the piece
+	 */
 	private Piece selectMovablePiece(AbstractModel model, ListPieces set) {
 		ListPieces tmpSet = new ListPieces();
-		//System.out.println("select movable pieces :");
-		//System.out.println(set);
-		//System.out.println("taille du set : " + set.size());
 		tmpSet.addAll(set);
 		Piece p = null;
 		do {
@@ -174,7 +201,6 @@ public class BotPlayer extends AbstractPlayer {
 			if(p != null)
 				tmpSet.remove(p);
 		}while(tmpSet.size() > 0 && model.accessibleSquares(p).size() == 0);
-		//System.out.println(tmpSet);
 		return (tmpSet.size() == 0 && p == null) ? null : p;
 	}
 }

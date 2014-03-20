@@ -1,11 +1,21 @@
 package grids;
 
 import java.awt.Color;
-import java.util.TreeSet;
-
 import Global.Coord;
 import Players.AbstractPlayer;
 
+/**
+ * A grid is a square containing either 2x2 or 4x4 squares where pieces can move.<br>
+ * A classic chess game would be composed of a single grid of 8x8 squares.<br>
+ * The little grids are called movable or attack grids because they can be moved during the game.
+ * These grids have an original owner depending on their original side.<br>
+ * The big grids are fixed.<br>
+ * See Rulex.txt for more info.
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class Grid {
 	private int level;
 	private Coord minCoord;
@@ -13,12 +23,6 @@ public class Grid {
 	private boolean attackBoard;
 	private Corner corner;
 	private Color defaultOwnersColor;
-	public Corner getCorner() {
-		return corner;
-	}
-	public void setCorner(Corner corner) {
-		this.corner = corner;
-	}
 	
 	public Grid() {}
 	public Grid(Coord begin) {
@@ -33,6 +37,10 @@ public class Grid {
 			attackBoard = false;
 		defaultOwnersColor = originalOwner();
 	}
+	/**
+	 * Creating a movable grid by specifying its corner with a corresponding String
+	 * @param str : String
+	 */
 	public Grid(String str) { /*only for attack grids */
 		this.corner = new Corner(str);
 		this.setCoordFromCorner(corner);
@@ -42,6 +50,11 @@ public class Grid {
 			attackBoard = false;
 		defaultOwnersColor = originalOwner();
 	}
+	/**
+	 * Creating a movable grid by specifying its corner with a corresponding String.<br>
+	 * The original owner of the grid is given by argument.
+	 * @param str : String
+	 */
 	public Grid(String str, Color colOwner) { /*only for attack grids */
 		this.corner = new Corner(str);
 		this.setCoordFromCorner(corner);
@@ -51,40 +64,24 @@ public class Grid {
 			attackBoard = false;
 		defaultOwnersColor = colOwner;
 	}
-	public Grid(Coord begin, Coord end) {
-		this.level = begin.getZ();
-		minCoord = begin;
-		maxCoord = end;
-		if(level%2 == 1)
-			attackBoard = true;
-		else
-			attackBoard = false;
-		defaultOwnersColor = originalOwner();
-	}
-	public Grid(Grid g) {
-		this.level = g.level;
-		this.maxCoord = g.maxCoord;
-		this.minCoord = g.minCoord;
-		this.attackBoard = g.attackBoard;
-		this.defaultOwnersColor = g.defaultOwnersColor;
-		this.corner = g.corner;
-	}
+
+	/* Setters and getters */
+	/**
+	 * Compute the min and max coordinates of the grid by looking at the corner
+	 * @param cor
+	 */
 	public void setCoordFromCorner(Corner cor) {
 		this.corner = cor;
 		this.level = corner.getLevel();
 		this.minCoord = corner.getMinCoord();
 		this.maxCoord = new Coord(minCoord.getX() + 1, minCoord.getY() + 1, level);
+	}	
+	public Corner getCorner() {
+		return corner;
 	}
-	
-	/*USELESS...
-	 * public Grid(Grid g) {
-		super(g);
-		this.level = g.level;
-		this.size = g.size;
-		this.grid = (TreeMap<Coord, Piece>) g.grid.clone();
-	}*/
-	
-	
+	public void setCorner(Corner corner) {
+		this.corner = corner;
+	}
 	public int getLevel() {
 		return level;
 	}
@@ -99,83 +96,31 @@ public class Grid {
 		return attackBoard;
 	}
 	
-	
-	/*public void printMovesFrom(Coord c) {
-		StringMap tmp = this.toStringMap();
-		Coord newCoord;
-		
-		if(this.getPieceAt(c) != null) {
-			for(Move m : this.getPieceAt(c).movements) {
-				if(m.isRepeat()) {
-					newCoord = new Coord(c.getX() + m.getFront(), c.getY() + m.getRight());
-					while(this.containsKey(newCoord) && this.get(newCoord) == null) {
-						if(this.get(newCoord) == null && m.isMove()) {
-							tmp.put(newCoord, "X");
-						}
-						else if(this.get(newCoord) != null && m.isAttack()) {
-							tmp.put(newCoord, "X (" + tmp.get(newCoord) + ")");
-						}
-						newCoord.setX(newCoord.getX() + m.getFront());
-						newCoord.setY(newCoord.getY() + m.getRight());						
-					}
-					if(this.containsKey(newCoord) && this.get(newCoord).color != this.get(c).color && m.isAttack()) {
-						tmp.put(newCoord, "X=" + tmp.get(newCoord));
-					}
-				}else {
-					newCoord = new Coord(c.getX() + m.getFront(), c.getY() + m.getRight());
-					if(this.get(newCoord) == null && m.isMove()) {
-						tmp.put(newCoord, "X");
-					}
-					else if(this.get(newCoord) != null && this.get(newCoord).color != this.get(c).color && m.isAttack()) {
-						tmp.put(newCoord, "X=" + tmp.get(newCoord));
-					}
-					
-				}
-			}
-			tmp.print();
-		}
-		
-	}*/
+	/**
+	 * Check if a coordinates is on the grid
+	 * @param c
+	 * @return boolean
+	 */
 	public boolean contains(Coord c) {
 		return (c.getZ() == this.level && c.getX() >= minCoord.getX() && c.getX() <= maxCoord.getX() && c.getY() >= minCoord.getY() && c.getY() <= maxCoord.getY());
 	}
+	/**
+	 * Check if a coordinate is on, above or below a square of the grid (does not test z)
+	 * @param c
+	 * @return boolean
+	 */
 	public boolean contains2d(Coord c) {
 		return (c.getX() >= minCoord.getX() && c.getX() <= maxCoord.getX() && c.getY() >= minCoord.getY() && c.getY() <= maxCoord.getY());
 	}
-
+	
+	
 	public boolean isOnTheLeft() {
 		return minCoord.getY() == 0;
 	}
+	
 	public boolean isOnFront() {
 		return minCoord.getX() == 0;
 	}
-	
-	/*public void printMovesFrom(Piece piece) {
-		
-		
-		Piece p = null;
-		int n = minCoord.getY();
-		
-		for(int i = minCoord.getX(); i < maxCoord.getX(); i++) {
-			for(int j = 0; j <  n; j++) {
-	        	System.out.print("\t");
-	        }
-			for(int j = minCoord.getY(); j < maxCoord.getY(); j++) {
-				System.out.print("|");
-				p = getPieceAt(new Coord(i,j));
-				if(p == null) {
-					if(piece.canGoTo(new Coord(i,j)))
-						System.out.print("X\t");
-					else
-						System.out.print("_\t");
-				} else
-					System.out.print(p + "\t");
-			}
-			System.out.println("|");
-			
-		}
-		System.out.println();
-	}*/
 	
 	public Coord getMinCoord() {
 		return minCoord;
@@ -184,6 +129,7 @@ public class Grid {
 	public void setMinCoord(Coord minCoord) {
 		this.minCoord = minCoord;
 	}
+	
 	public Coord getMaxCoord() {
 		return maxCoord;
 	}
@@ -193,6 +139,10 @@ public class Grid {
 		this.maxCoord = maxCoord;
 	}
 	
+	/**
+	 * Get the color of the original owner based on its location (should only be used at the beginning of a game to give a value to the attribute defaultOwnersColor)
+	 * @return color
+	 */
 	public Color originalOwner() {
 		if(level < 4)
 			return Color.WHITE;
@@ -201,13 +151,25 @@ public class Grid {
 		else
 			return null;
 	}
+	
 	public Color getDefaultOwnersColor() {
 		return defaultOwnersColor;
 	}
+	/**
+	 * Convert the grid into a String in order to print of display it.
+	 * @return String
+	 */
+	@Override
 	public String toString() {
 		return "Grid : " + minCoord + " to " + maxCoord;
 	}
 	
+	/**
+	 * Check if the player sent in parameter is the original owner of the board.<br>
+	 * It is used to know if a player can move a grid when there is no piece on it.
+	 * @param player
+	 * @return boolean
+	 */
 	public boolean belongsTo(AbstractPlayer player) {
 		return (player.getColor() == this.defaultOwnersColor);
 	}

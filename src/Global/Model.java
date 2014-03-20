@@ -3,35 +3,26 @@ package Global;
 import grids.Board;
 import grids.Corner;
 import grids.Grid;
-import grids.Corner.CornerSide;
-
 import java.awt.Color;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
 import java.util.TreeSet;
-
-import javax.swing.JOptionPane;
-
-import chessGUI.CoordGraph;
-import chessGUI.MouseManager;
 
 import Pieces.*;
 import Players.AbstractPlayer;
-import Players.HumanPlayer;
 import Players.PlayerListener;
 
-//import org.jdom2.*;
+/**
+ * This class contains the logical side of the program.
+ * It manages the players and generate the board.
+ */
+/*
+ * Comments for this class are located in the AbstractModel that this class is implementing.
+ * You can see them from here by clicking on a method name and pressing F2 (or any other key allowing to view the javadoc entry)
+ */
+public class Model implements AbstractModel, PlayerListener{
 
-public class Model implements AbstractModel, PlayerListener, Serializable{
-	/**
-	 * 
-	 */
 	private List<AbstractPlayer> listPlayers;
 	private ListPieces setPieces;
 	private Board board;
@@ -39,7 +30,7 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 	private boolean gameOver = false;
 	private boolean gameStopped = false;
 
-	/*Constructors*/
+	/* Constructors */
 	public Model() {
 		this.listPlayers = new ArrayList<AbstractPlayer>();
 		board = new Board();
@@ -54,13 +45,12 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 		setPieces = new ListPieces();
 		
 		this.initializeBoard();
-		
-		currentPlayer = listPlayers.get(0);
-		
 		this.initializePieces();
+
+		// The first player is set as the current player
+		currentPlayer = listPlayers.get(0);
 	}
 
-	/* Listener function */
 	@Override
 	public void hasPlayed(){
 		if(listPlayers.get(0) == currentPlayer) {
@@ -71,42 +61,43 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 		}
 		if(setPieces.getKing(currentPlayer) == null || (setPieces.getPiecesOf(currentPlayer).size() <= 1))
 			endOfGame();
-		/*else if(isCheck(currentPlayer)) {
-			System.out.println(currentPlayer + " is in check !");
-		}*/
 	}
 	
-	/*end of the game*/
 	@Override
 	public boolean isGameOver() {
 		return gameOver;
 	}
+
 	@Override
 	public void endOfGame() {
 		this.gameOver = true;
 	}
+
 	@Override
 	public void stopGame() {
 		gameStopped = true;
 	}
+
 	@Override
 	public void newGame() {
 		gameStopped = false;
+		gameOver = false;
+		
+		resetListPlayers();
+		resetPieces();
 	}
+
 	@Override
 	public boolean isStopped(){
 		return gameStopped;
 	}
+	
 	@Override
 	public void initializePieces(){
 		for(int i = 1; i <= 4; i++) {
 			setPieces.add(new Pawn(new Coord(2,i,2), Color.WHITE));
 		}
-		Piece rook = new Rook(new Coord(0,0,3), Color.WHITE);
-		setPieces.add(rook);
-		/*rook.translate(new Coord(3,3,-1));*/
-		/*rook.setCoordinates(new Coord(3,3,2));*/
-		
+		setPieces.add(new Rook(new Coord(0,0,3), Color.WHITE));
 		setPieces.add(new Queen(new Coord(0,1,3), Color.WHITE));
 		setPieces.add(new Pawn(new Coord(1,0,3), Color.WHITE));
 		setPieces.add(new Pawn(new Coord(1,1,3), Color.WHITE));
@@ -140,6 +131,7 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 		setPieces.add(new Bishop(new Coord(8,3,6), Color.BLACK));
         
 	}
+
 	@Override
 	public void initializeBoard() {
 		Grid fix1, fix2, fix3, mov1, mov2, mov3, mov4;
@@ -161,23 +153,23 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 		board.add(mov4);
 	}
 	
+
 	@Override
 	public void setGameOver(boolean bool)
 	{
 		gameOver = bool;
 	}
 	
-	/*Piece movements*/
+	/* Piece movements */
+	
 	@Override
 	public TreeSet<Coord> accessibleSquares(Piece p) {
 		boolean obstacle;
 		Coord newCoord;
-		Iterator<Grid> it;
 		Piece pieceAt;
 		TreeSet<Coord> tree = new TreeSet<Coord>();
 		
 		for(Move m : p.getMovements()) {
-			it = board.iterator();
 			obstacle = false;
 			newCoord = p.getCoordinates();
 			newCoord = newCoord.plus(m.getCoord());
@@ -192,7 +184,6 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 						
 						if((pieceAt == null && m.isMove()) || (pieceAt != null && pieceAt.isEnnemyOf(p) && m.isAttack())) {
 							tree.add(new Coord(newCoord.getX(), newCoord.getY(), g.getLevel()));
-							//System.out.println("tree add " + new Coord(newCoord.getX(), newCoord.getY(), g.getLevel()));
 						}
 						if(pieceAt != null) {
 							obstacle = true;
@@ -200,16 +191,17 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 					}
 				}
 				newCoord = newCoord.plus(m.getCoord());
-			}while(obstacle == false && m.isRepeat() && coordIsInTheSpace(newCoord));
+			}while(obstacle == false && m.isRepeat() && coordIsInTheSpace(newCoord));	// loop on a specific direction as long as there is no obstacle, 
+																						// the square exists on a grid and the piece can move freely in that direction (e.g : rook in lines)
 		}
 		if(p instanceof King && p.belongsTo(currentPlayer)) {
 			checkFilterForKing(tree, currentPlayer);
 		}
 		return tree;
 	}
-	
+
 	@Override
-	public TreeSet<Coord> attackableSquares(Piece p) { /*can attack a piece here */
+	public TreeSet<Coord> attackableSquares(Piece p) {
 		boolean obstacle;
 		Coord newCoord;
 		Piece pieceAt;
@@ -238,14 +230,15 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 					}
 				}
 				newCoord = newCoord.plus(m.getCoord());
-			}while(obstacle == false && m.isRepeat() && coordIsInTheSpace(newCoord));
+			}while(obstacle == false && m.isRepeat() && coordIsInTheSpace(newCoord));	// loop on a specific direction as long as there is no obstacle, 
+																						// the square exists on a grid and the piece can move freely in that direction (e.g : rook in lines)
 		}
 		if(p instanceof King && p.belongsTo(currentPlayer)) {
 			checkFilterForKing(tree, currentPlayer);
 		}
 		return tree;
 	}
-	
+
 	@Override
 	public TreeSet<Coord> attackSquares(TreeSet<Coord> set) {
 		TreeSet<Coord> tree = new TreeSet<Coord>();
@@ -255,7 +248,7 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 		}
 		return tree;
 	}
-	
+
 	@Override
 	public TreeSet<Coord> attackSquares(Piece p) {
 		return attackSquares(accessibleSquares(p));
@@ -273,7 +266,6 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 			if(p instanceof Pawn && (((Pawn) p).incrementNMoves() == 1)) {
 				((Pawn) p).removeFirstMove();
 			}
-			//System.out.println("Move " + p.toString().charAt(0) + " from " + origin + " to " + dest);
 			return true;
 		}
 		else
@@ -295,7 +287,7 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 		return casesOfKing;
 	}
 	
-	/*Get several sets of pieces*/
+	@Override
 	public ListPieces getPieces() {
 		return setPieces;
 	}
@@ -321,7 +313,7 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 	}
 
 	
-	/*Board manager*/
+	/* Board manager */
 	
 	@Override
 	public Board getBoard() {
@@ -333,9 +325,7 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 		board = new Board();
 	}
 	
-	/*Corner manager*/
-	
-	
+	/* Corner manager */
 	
 	@Override
 	public ListPieces getPiecesOnGrid(Grid g) {
@@ -344,7 +334,6 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
                 if(g.contains(p.getCoordinates()))
                         tree.add(p);
         }
-        /* System.out.println("getPieces : " + tree); */
         return tree;
 	}
 	@Override
@@ -361,29 +350,8 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
                                 (tree.size() == 0 && currentPlayer.getColor() == g.getDefaultOwnersColor()));
         }
 	}
-	@Override
-	public boolean gridCanGoToPosition(Grid g, String strCor) {
-		if(gridIsMovable(g)) {
-			Corner newCorn = new Corner(strCor);
-			if(g.getCorner().isAccessible(newCorn)) {
-				Board treeAttack = board.getAttackBoards();
-				boolean free = true;
-				for(Grid gTmp : treeAttack) {
-					if(gTmp.getCorner() == newCorn)
-						free = false;
-				}
-				return free;
-			}
-			else
-				return false;
-		}
-		else
-			return false;
-	}
-	@Override
-	public boolean moveGridTo(String strCor1, Color col, String strCor2) {
-		return moveGridTo(board.getGridAtCorner(strCor1), new Corner(strCor2));
-	}
+
+
 	@Override
 	public boolean gridCanGoToPosition(Corner original, Corner newCorn) {
 		Grid g = board.getGridAtCorner(original);
@@ -407,17 +375,12 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 	public boolean moveGridTo(Grid grid, Corner newCorner) {
 		if(gridCanGoToPosition(grid.getCorner(), newCorner)) {
 			ListPieces pieces = getPiecesOnGrid(grid);
-			//System.out.println("PIECES ON  !!! " + pieces);
 			Coord translation = newCorner.getMinCoord().minus(grid.getMinCoord());
-			//System.out.println("TRANSLATE !!! " + translation);
 			for(Piece p : pieces) {
 				p.translate(translation);
 			}
-			//System.out.println("PIECES ON  !!! " + pieces);
 			
 			grid.setCoordFromCorner(newCorner);
-			//System.out.println("level : " + newCorner.getLevel());
-			//System.out.println("-----------------BOARD : " + board);
 			return true;
 		}
 		else
@@ -450,7 +413,7 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 		return tree;
 	}
 	@Override
-	public Board getMovableGrids() {	/*for the current player*/
+	public Board getMovableGrids() {
 		Board movableGrids = new Board();
 		Board listOfAttackBoards = board.getAttackBoards();
 		for(Grid g : listOfAttackBoards) {
@@ -460,27 +423,7 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 		return movableGrids;		
 	}
 	
-	@Override
-	public boolean gridCanGoToPosition(String strCorn1, String strCor) {
-		Corner original = new Corner(strCorn1);
-		Grid g = board.getGridAtCorner(original);
-		if(g != null && gridIsMovable(g)) {
-			Corner newCorn = new Corner(strCor);
-			if(g.getCorner().isAccessible(newCorn)) {
-				Board treeAttack = board.getAttackBoards();
-				boolean free = true;
-				for(Grid gTmp : treeAttack) {
-					if(gTmp.getCorner().equals(newCorn))
-						free = false;
-				}
-				return free;
-			}
-			else
-				return false;
-		}
-		else
-			return false;
-	}
+
 	@Override
 	public boolean allLevelsFreeAt(int x, int y) {
 		boolean b = true;
@@ -491,10 +434,6 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 			b = b || isEmptyAt(new Coord(x,y,g.getLevel()));
 		}
 		return b;
-	}
-	@Override
-	public boolean allLevelsFreeAt(Coord c) {
-		return allLevelsFreeAt(c.getX(), c.getY());
 	}
 	
 	/*Player manager*/
@@ -535,16 +474,11 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 		return currentPlayer;
 	}
 	
-	/*Searching a square*/
+	/* Searching a square */
 	
 	@Override
 	public boolean isEmptyAt(Coord c) {
 		return (setPieces.getPieceAt(c) == null);
-	}
-	
-	@Override
-	public boolean coordIsOnAGrid(Coord c) {
-		return (board.getGridContaining(c) != null);
 	}
 	
 	@Override
@@ -554,7 +488,7 @@ public class Model implements AbstractModel, PlayerListener, Serializable{
 	
 	@Override
 	public boolean isCheck(AbstractPlayer player) {
-		ListPieces piecesOfEnnemy = setPieces.getLivingPieces(setPieces.getPiecesOf(getOtherPlayer(player)));
+		ListPieces piecesOfEnnemy = ListPieces.getLivingPieces(setPieces.getPiecesOf(getOtherPlayer(player)));
 		Piece king = setPieces.getKing(player);
 		if(king != null) {
 			for(Piece p : piecesOfEnnemy) {

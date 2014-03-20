@@ -28,18 +28,29 @@ import Players.HumanPlayer;
 import Players.PlayerListener;
 import chessGUI.*;
 
+/**
+ * Manage the backup process of a game into an XML file
+ * uses JDom
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class XmlManager {
 	private XmlManager() {}
 	
-	static Element racine = new Element("Model");
+	private static Element root = new Element("Model");
 
-	//On crée un nouveau Document JDOM basé sur la racine que l'on vient de créer
-	static org.jdom2.Document document = new Document(racine);
-	   
+	//Create a new JDom file at the root of the program
+	private static org.jdom2.Document document = new Document(root);
+	
+	/**
+	 * Encode the current game into the xml file.
+	 * @param model
+	 * @param fileName
+	 */
     public static void encodeToFile(AbstractModel model, String fileName) {
-        // ouverture de l'encodeur vers le fichier
-    	//On crée un nouvel Element etudiant et on l'ajoute
-        //en tant qu'Element de racine
+    	//Save data about the attack grids (their original owner, their position)
     	Element attackBoards = new Element("AttackBoards");
     	for(Grid g : model.getBoard().getAttackBoards()) {
     		Element newGrid = new Element("Grid");
@@ -50,6 +61,12 @@ public class XmlManager {
     			newGrid.setAttribute("defaultOwnersColor", "WHITE");
     		attackBoards.addContent(newGrid);
     	}
+    	
+    	/*
+    	 * Save data about the min and max coordinates of the fixed grid.
+    	 * Not really necessary here because the size or the position of these grids cannot be changed.
+    	 */
+    	
     	Element fixedBoards = new Element("FixedBoards");
     	for(Grid g : model.getBoard().getFixedLevels()) {
     		Element newGrid = new Element("Grid");
@@ -60,11 +77,16 @@ public class XmlManager {
     		newGrid.setAttribute("minCoordX", ""+g.getMinCoord().getX());
     		fixedBoards.addContent(newGrid);
     	}
-    	racine.addContent(fixedBoards);
-    	racine.addContent(attackBoards);
+    	//Add to the root document
+    	root.addContent(fixedBoards);
+    	root.addContent(attackBoards);
+    	//Save the name of the current player
     	Element currentPl = new Element("CurrentPlayer");
     	currentPl.addContent(model.getCurrentPlayer().getName());
-    	racine.addContent(currentPl);
+    	root.addContent(currentPl);
+    	/*
+    	 * For each player, we save its name, its color, its type, its pieces
+    	 */
     	for(AbstractPlayer player : model.getListPlayers()) {
     		Element elemPlayer = new Element("Player");
     		Element name = new Element("name");
@@ -89,23 +111,31 @@ public class XmlManager {
 	    		listPieces.addContent(tmpElem);
 	    	}
 	    	elemPlayer.addContent(listPieces);
-	    	racine.addContent(elemPlayer);
+	    	root.addContent(elemPlayer);
     	}
-        enregistre(fileName);
+    	//Finally we save all this informations into an xml file
+    	saveToXml(fileName);
     }
-    private static void enregistre(String fichier)
+    /**
+     * The data stored in the root element are stored in the xml file
+     * @param file
+     */
+    private static void saveToXml(String file)
     {
        try
        {
-          //On utilise ici un affichage classique avec getPrettyFormat()
-          XMLOutputter sortie = new XMLOutputter(Format.getPrettyFormat());
-          //Remarquez qu'il suffit simplement de créer une instance de FileOutputStream
-          //avec en argument le nom du fichier pour effectuer la sérialisation.
-          sortie.output(document, new FileOutputStream(fichier));
+          XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
+          xmlOut.output(document, new FileOutputStream(file));
        }
        catch (java.io.IOException e){}
     }
-    public static void decodeXML(AbstractModel model, View window, String fileName) {
+    /**
+     * Restore data from the file to the game
+     * @param model
+     * @param window
+     * @param fileName
+     */
+    public static void decodeXML(AbstractModel model, AbstractView window, String fileName) {
     	Element elem;
         SAXBuilder sxb = new SAXBuilder();
         try
@@ -118,16 +148,17 @@ public class XmlManager {
         
         window.cleanAttackBoards();
         model.resetBoard();
+       
+       //Restore the Board
         
        List<Element> fixedBoards = elem.getChild("FixedBoards").getChildren();
        
        Iterator<Element> itFixedBoards = fixedBoards.iterator();
        while(itFixedBoards.hasNext()) {
-    	   Element tmp = (Element) itFixedBoards.next();
+    	   Element tmp = itFixedBoards.next();
     	   try {
     		   model.getBoard().addGrid(new Grid(new Coord(tmp.getAttribute("minCoordX").getIntValue(), tmp.getAttribute("minCoordY").getIntValue(), tmp.getAttribute("minCoordZ").getIntValue())));
     	   } catch (DataConversionException e) {
-    		   // TODO Auto-generated catch block
     		   e.printStackTrace();
     	   }
     	   
@@ -137,14 +168,14 @@ public class XmlManager {
        
        Iterator<Element> itAttackBoards = attackBoards.iterator();
        while(itAttackBoards.hasNext()) {
-    	   Element tmp = (Element) itAttackBoards.next();
+    	   Element tmp = itAttackBoards.next();
     	   if(tmp.getAttributeValue("defaultOwnersColor").equals("BLACK"))
     		   model.getBoard().addGrid(new Grid(tmp.getText(), Color.BLACK));
     	   else
     		   model.getBoard().addGrid(new Grid(tmp.getText(), Color.WHITE));
        }
-       //System.out.println(model.getBoard());
         
+       //Restore the players
        List<Element> listPlayers = elem.getChildren("Player");
         
        Iterator<Element> itPlayer = listPlayers.iterator();
@@ -155,8 +186,7 @@ public class XmlManager {
        
        while(itPlayer.hasNext()) {
     	   
-	       //On crée une List contenant tous les noeuds "etudiant" de l'Element racine
-    	   Element tmpPlayer = (Element) itPlayer.next();
+    	   Element tmpPlayer = itPlayer.next();
     	   AbstractPlayer player = null;
     	   if(tmpPlayer.getChildText("type").equals("HumanPlayer"))
     		   player = new HumanPlayer(tmpPlayer.getChildText("name"));
@@ -168,17 +198,13 @@ public class XmlManager {
     	   player.addPlayerListener((PlayerListener)window);
     	   model.addPlayer(player);
     	   
-    	   List<Element> listEtudiants = tmpPlayer.getChild("SetPieces").getChildren();
+    	   // Restore the pieces of the player
+    	   List<Element> listElemPlayers = tmpPlayer.getChild("SetPieces").getChildren();
     	   
-	       //On crée un Iterator sur notre liste
-	       Iterator<Element> i = listEtudiants.iterator();
+	       Iterator<Element> i = listElemPlayers.iterator();
 	       while(i.hasNext())
 	       {
-	    	   	//On recrée l'Element courant à chaque tour de boucle afin de
-	    	   	//pouvoir utiliser les méthodes propres aux Element comme :
-	    	   	//sélectionner un nœud fils, modifier du texte, etc...
-	    	   	Element courant = (Element)i.next();
-	    	   	//On affiche le nom de l’élément courant
+	    	   	Element courant = i.next();
 	    	   	Piece p = null;
 	    	   	Coord coord = new Coord(Integer.parseInt(courant.getAttributeValue("CoordX")), 
 	    			   		Integer.parseInt(courant.getAttributeValue("CoordY")), 
@@ -209,13 +235,15 @@ public class XmlManager {
 	    	   	model.addPiece(p);
 	       }
        }
+       // Restor the name of the current player
        if(document.getRootElement().getChild("CurrentPlayer").getText().equals("Player 1"))
     	   model.setCurrentPlayer(model.getListPlayers().get(0));
        else
     	   model.setCurrentPlayer(model.getListPlayers().get(1));
+       
+       // Refresh the UI
        window.refreshCurrentPlayer();
        window.attackBoardPlacement();
-		
        window.piecesPlacement();	
        window.refreshDeadPieces();
        window.pack();

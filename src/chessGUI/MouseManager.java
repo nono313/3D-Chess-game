@@ -6,12 +6,8 @@ import grids.Grid;
 import java.awt.Color;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-
 import java.util.TreeSet;
 
-import javax.swing.JDialog;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
@@ -28,11 +24,18 @@ import Players.BotPlayer;
 import Players.HumanPlayer;
 import Players.PlayerListener;
 
+/**
+ * Listens for the mouse actions in the UI
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class MouseManager implements MouseListener
 {
 	/* Attributs */
-	protected AbstractModel model;		
-	protected AbstractView view;
+	private AbstractModel model;		
+	private AbstractView view;
 
 	private CoordGraph lastColoredCaseCoord;
 	private CoordGraph lastPressedCaseCoord;	
@@ -53,7 +56,14 @@ public class MouseManager implements MouseListener
 		lastPressedGrid = null;				
 	}
 
-	/* ColoredLayout methods */	
+	/* ColoredLayout methods */
+	/**
+	 * Add a colored layout on top of the JPanel.<br>
+	 * Used to show the users the movement possible for the piece he selected.
+	 * 
+	 * @param pointerCoordGraph
+	 * @param pointerPiece
+	 */
 	private void addAllColoredLayout(CoordGraph pointerCoordGraph, Piece pointerPiece)
 	{	
 		Color moveLayoutColor = new Color(0, 255, 0, 100);
@@ -71,6 +81,11 @@ public class MouseManager implements MouseListener
 
 		lastColoredCaseCoord = pointerCoordGraph;
 	}
+	
+	/**
+	 * When a movement has been made or if the user has selected another piece, 
+	 * the coloured layout added by {@link #addAllColoredLayout()} must be removed.
+	 */
 	private void cleanAllColoredLayout() 
 	{
 		if(lastColoredCaseCoord != null) 
@@ -88,6 +103,10 @@ public class MouseManager implements MouseListener
 		}
 	}
 
+	/**
+	 * Colour the background of grid's panels from the small map
+	 * @param pointerGrid
+	 */
 	private void addAllGridColoredLayout(Grid pointerGrid)
 	{	
 		Color moveLayoutColor = new Color(0, 255, 0, 100);
@@ -108,6 +127,9 @@ public class MouseManager implements MouseListener
 
 		lastColoredGrid = pointerGrid;
 	}
+	/**
+	 * Clean the color added by {@link #addAllGridColoredLayout(Grid)}
+	 */
 	private void cleanAllGridColoredLayout() 
 	{
 		int tmpX, tmpY;
@@ -136,7 +158,13 @@ public class MouseManager implements MouseListener
 	}
 
 	/* Attack-Move verification */
-	public boolean isAccessible(Coord destination) {
+	
+	/**
+	 * Check if the destination is reachable from the selected piece
+	 * @param destination
+	 * @return true if the movement / attack is possible
+	 */
+	private boolean isAccessible(Coord destination) {
 		boolean toBeReturn = false;
 		
 		if(listAccessibleSquares != null && listAccessibleSquares.contains(destination))
@@ -152,9 +180,20 @@ public class MouseManager implements MouseListener
 			
 		return toBeReturn;			
 	}
-	public void moveFromTo(CoordGraph from, CoordGraph to) {
+	
+	/**
+	 * Move a piece from a 2D coord on the screen to another
+	 * @param from
+	 * @param to
+	 */
+	private void moveFromTo(CoordGraph from, CoordGraph to) {
 		moveFromTo(from.toCoord(), to.toCoord());
 	}
+	/**
+	 * Move a piece from a 3D coord on the screen to another
+	 * @param from
+	 * @param to
+	 */
 	public void moveFromTo(Coord from, Coord to) {
 		view.piecesCleaning();
 		model.moveFromCoordTo(from, to);
@@ -173,6 +212,11 @@ public class MouseManager implements MouseListener
 		
 		view.revalidate();
 	}
+	/**
+	 * Move an attack grid to a specific corner
+	 * @param gToMove
+	 * @param tmpCorn
+	 */
 	public void moveGridTo(Grid gToMove, Corner tmpCorn) {
 		view.cleanAttackBoards();
 		view.piecesCleaning();
@@ -182,6 +226,9 @@ public class MouseManager implements MouseListener
 		view.attackBoardPlacement();
 		view.piecesPlacement();
 	}
+	/**
+	 * Refresh the whole user interface
+	 */
 	public void refreshAll() {
 		view.cleanAttackBoards();
 		view.piecesCleaning();		
@@ -193,8 +240,15 @@ public class MouseManager implements MouseListener
 	}	
 		
 	/* Methods for MouseListener */
+	@Override
 	public void mouseClicked(MouseEvent e){}
 
+	@Override
+	/**
+	 * Manage the different actions taken when the user click somewhere on the window (other than a button or a menu item).<br>
+	 * The action taken depend on the previous clicks and the area selected.
+	 * @param e : MouseEvent
+	 */
 	public void mousePressed(MouseEvent e)
 	{
 		CoordGraph pointerCoordGraph = view.coordCaseAtPointer(e.getX(), e.getY());	
@@ -319,6 +373,11 @@ public class MouseManager implements MouseListener
 				this.cleanAllColoredLayout();
 		}
 	}
+	
+	/**
+	 * Manage the "drop" action in a drag and drop of a piece.
+	 */
+	@Override
 	public void mouseReleased(MouseEvent e){
 		CoordGraph pointerCoordGraph = view.coordCaseAtPointer(e.getX(), e.getY());
 
@@ -341,9 +400,14 @@ public class MouseManager implements MouseListener
 		}		
 	}
 
+	@Override
 	public void mouseEntered(MouseEvent e){}
+	@Override
 	public void mouseExited(MouseEvent e){}
 
+	/**
+	 * Ask the user with 2 popup the type of players (human or bot) and create them in the model.
+	 */
 	public void createPlayers() {
 		model.resetListPlayers();
 		AbstractPlayer p1, p2;
@@ -365,7 +429,13 @@ public class MouseManager implements MouseListener
 		}		
 		model.setCurrentPlayer(p1);
 	}
-	public void promotion(Piece p) {
+	/**
+	 * Promotion is applied when a pawn has reached the ennemy line.<br>
+	 * It is then allowed to transform into a Queen, a Bishop, a Knight or a Rook.<br>
+	 * The player chooses what he prefers within a popup window. 
+	 * @param p
+	 */
+	private void promotion(Piece p) {
 		UIManager.put("OptionPane.cancelButtonText", "Cancel");
 		
 		Object[] possibilities = {"Queen", "Bishop", "Knight", "Rook"};

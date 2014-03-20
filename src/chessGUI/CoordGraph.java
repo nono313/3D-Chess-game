@@ -2,11 +2,19 @@ package chessGUI;
 
 import Global.Coord;
 
+/**
+ * CoordGraph is the 2D coordinates representing, on the UI, the 3D Coord class.
+ * Each 3D position in the Model has a 2D equivalent on the screen.
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class CoordGraph implements Comparable<CoordGraph>
 {
 	/* Attributs */
-	protected int x;
-	protected int y;
+	private int x;
+	private int y;
 
 	/* Getters & Setters */
 	public int getX() {
@@ -37,6 +45,17 @@ public class CoordGraph implements Comparable<CoordGraph>
 		else
 			return (x==coord.x) && (y==coord.y);
 	}
+	
+	/**
+	 * Compare 2 CoordGraph objects.<br>
+	 * The comparison is made first on the x attribute and then on the y of both x are equal.
+	 * 
+	 * @param coord
+	 * @return 0 if both equal
+	 * 			-1 if this is lesser than coord
+	 * 			1 if this is greater than coord
+	 */
+	@Override
 	public int compareTo(CoordGraph coord) {
 		if(x < coord.x)
 			return -1;
@@ -51,9 +70,17 @@ public class CoordGraph implements Comparable<CoordGraph>
 				return 0;
 		}
 	}
+	/**
+	 * Convert the CoordGraph to a String in order to be printed or displayed
+	 */
+	@Override
 	public String toString() {
 		return "" + x + ";" + y;
 	}
+	/**
+	 * Convert the 2D CoordGraph into a 3D Coord in order to interact with the model
+	 * @return Coord equivalent
+	 */
 	public Coord toCoord() {
 		int i,j,k;
 		if(x >= 12) {
@@ -68,7 +95,6 @@ public class CoordGraph implements Comparable<CoordGraph>
 			k = 2;
 			i = x;
 		}
-		
 		if(y >= 2 && y <= 5) { /*fixed grid*/
 			j = y-1;
 		}
@@ -80,20 +106,6 @@ public class CoordGraph implements Comparable<CoordGraph>
 			j = y-2;
 			k++;
 		}
-		
-		/*i = x;
-		j = y;
-		if(z >= 4)
-			i+=4;
-		if(z >= 6)
-			i+=4;
-		if(!isAnAttackBoard()) {
-			j+=1;
-		}
-		else {
-			if(y >= 4)
-				j+=2;				
-		}*/
 		return new Coord(i,j,k);
 	}
 }

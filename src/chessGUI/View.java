@@ -6,32 +6,21 @@ import grids.Grid;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.TreeSet;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -39,14 +28,24 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.border.*;
 import Global.*;
 import Pieces.*;
-import Players.AbstractPlayer;
 import Players.PlayerListener;
 
+/**
+ * The View class manages the graphical user interface using Swing.
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
+/*
+ * Comments for most of the methods are located in the AbstractModel that this class is implementing.
+ * You can see them from here by clicking on a method name and pressing F2 (or any other key allowing to view the javadoc entry)
+ */
 public class View extends JFrame implements PlayerListener, AbstractView
 {
 	/* Attributs */
@@ -88,8 +87,8 @@ public class View extends JFrame implements PlayerListener, AbstractView
         private JPanel piecesPanelPlayer2 = new JPanel(new GridLayout(2,0,6,0));    
 
 		
-		JLabel jLabel1 = new JLabel();
-		JLabel jLabel2 = new JLabel();
+		private JLabel jLabel1 = new JLabel();
+		private JLabel jLabel2 = new JLabel();
 		
 		/* Dead Pieces arrayList */
 		private List<JPanelImage> deadPiecesCasesPlayer1 = new ArrayList<JPanelImage>();
@@ -146,7 +145,7 @@ public class View extends JFrame implements PlayerListener, AbstractView
 	/* Initialization functions */
 	private void windowInitialization(String title, int width, int height)
 	{
-		this.setDefaultCloseOperation(this.EXIT_ON_CLOSE);	  
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	  
 		this.setResizable(false);
 		this.setTitle(title);	      
 
@@ -288,8 +287,8 @@ public class View extends JFrame implements PlayerListener, AbstractView
 		jLabel1.setFont(f.deriveFont(f.getStyle() | Font.BOLD));
 		jLabel2.setFont(f.deriveFont(f.getStyle() & ~Font.BOLD));
 		
-		jLabel1.setHorizontalAlignment(JLabel.CENTER);
-		jLabel2.setHorizontalAlignment(JLabel.CENTER);
+		jLabel1.setHorizontalAlignment(SwingConstants.CENTER);
+		jLabel2.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		labelPanelPlayer1.add(jLabel1, BorderLayout.CENTER);
 		labelPanelPlayer2.add(jLabel2, BorderLayout.CENTER);
@@ -303,7 +302,6 @@ public class View extends JFrame implements PlayerListener, AbstractView
 		JPanelImage tmpJPanelImage;
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		
-		boolean boolCaseExist;
 		Color defaultColor = mainGridPanel.getBackground();
 		
 		int marginBot = 0;
@@ -348,7 +346,6 @@ public class View extends JFrame implements PlayerListener, AbstractView
 		JPanelImage tmpJPanelImage;
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		
-		boolean boolCaseExist;
 		Color defaultColor = smallGridPanel.getBackground();
 		
 		int marginBot = 0;
@@ -419,9 +416,9 @@ public class View extends JFrame implements PlayerListener, AbstractView
 		mainBoardPlacement(abstractModel.getBoard().getAttackBoards());
 		smallBoardPlacement(abstractModel.getBoard().getAttackBoards());
 	}
+	
 	@Override
-	public void mainBoardPlacement(Board boardList)
-	{	
+	public void mainBoardPlacement(Board boardList)	{	
 		int i, j;
 		CoordGraph minCoord, maxCoord;
 		
@@ -631,9 +628,7 @@ public class View extends JFrame implements PlayerListener, AbstractView
 		JPanelImage tmpCase;	
 		Color mainGridColor = container.getBackground();
 		Color smallGridColor = smallGridPanel.getBackground();
-		
-		Border caseBorder = null;
-		
+				
 		for(Grid tmpBoard : boardList) 
 		{	
 			minCoord = tmpBoard.getMinCoord().toCoordGraph();
@@ -659,7 +654,6 @@ public class View extends JFrame implements PlayerListener, AbstractView
 	public void piecesCleaning(){
 		
 		JPanelImage tmpCase;
-				
 		for(Piece tmpPiece : abstractModel.getPieces()) 
 		{
 			tmpCase = getCaseFrom3DCoords(tmpPiece.getCoordinates());
@@ -692,19 +686,16 @@ public class View extends JFrame implements PlayerListener, AbstractView
 		}
 	}
 		
-	/* Coords translation functions */
 	@Override
 	public JPanelImage getCaseFrom3DCoords(Coord coord)
 	{		
 		return getCaseFromCoords(coord.toCoordGraph());				
 	}
 	
-	/* Cases' and pieces' verification functions */
 	@Override
 	public CoordGraph coordCaseAtPointer(int x, int y)
 	{				
 		int posX, posY, width, heigth;
-		int index = -1;
 		boolean boolCaseExist = false;		
 
 		CoordGraph tmpCoordGraph = null;
@@ -743,7 +734,6 @@ public class View extends JFrame implements PlayerListener, AbstractView
 	public CoordGraph coordSmallCaseAtPointer(int x, int y)
 	{				
 		int posX, posY, width, heigth;
-		int index = -1;
 		boolean boolCaseExist = false;		
 
 		CoordGraph tmpCoordGraph = null;
@@ -778,64 +768,21 @@ public class View extends JFrame implements PlayerListener, AbstractView
 			return null;
 	}	
 	
-	@Override
-	public boolean isPieceAtCoords(CoordGraph coordGraph)
-	{				
-		JPanelImage tmpCase = mapMainGridCases.get(coordGraph);
-		
-		if(tmpCase != null && tmpCase.getImageIcon() == null)
-			return false;
-		else
-			return true;
-	}
-	@Override
-	public boolean isSmalCaseOnBoard(CoordGraph coordGraph)
-	{				
-		return this.getSmallCaseFromCoords(coordGraph).getBackground().equals(smallGridPanel.getBackground());
-	}
 	
-	/* Cases' "getters" */
-	@Override
-	public JPanelImage getCaseFromXY(int x, int y)
-	{			
-		return mapMainGridCases.get(new CoordGraph(x,y));
-	}
 	@Override
 	public JPanelImage getCaseFromCoords(CoordGraph coordGraph)
 	{		
 		return mapMainGridCases.get(coordGraph);
 	}
-	@Override
-	public JPanelImage getCaseFromPointer(int x, int y)
-	{
-		CoordGraph tmpCoord = this.coordCaseAtPointer(x, y);
-		
-		if(tmpCoord != null)
-			return this.getCaseFromCoords(tmpCoord);
-		else
-			return null;
-	}
 	
-	@Override
-	public JPanelImage getSmallCaseFromXY(int x, int y)
-	{			
-		return mapSmallGridCases.get(new CoordGraph(x,y));
-	}
+	
+	
 	@Override
 	public JPanelImage getSmallCaseFromCoords(CoordGraph coordGraph)
 	{		
 		return mapSmallGridCases.get(coordGraph);
 	}
-	@Override
-	public JPanelImage getSmallCaseFromPointer(int x, int y)
-	{
-		CoordGraph tmpCoord = this.coordSmallCaseAtPointer(x, y);
-		
-		if(tmpCoord != null)
-			return this.getSmallCaseFromCoords(tmpCoord);
-		else
-			return null;
-	}
+	
 
 	@Override
 	public void refreshDeadPieces() {
@@ -870,7 +817,6 @@ public class View extends JFrame implements PlayerListener, AbstractView
 
 	@Override
 	public void setLocationRelativeTo(Component object) {
-		// TODO Auto-generated method stub
 		super.setLocationRelativeTo(object);
 	}
 

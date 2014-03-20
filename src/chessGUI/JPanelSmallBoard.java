@@ -3,7 +3,6 @@ package chessGUI;
 import grids.Corner;
 
 import java.awt.FlowLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 

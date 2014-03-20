@@ -2,6 +2,14 @@ package Pieces;
 
 import Global.Coord;
 
+/**
+ * This class is used to characterized the possibilities of movement of a piece.<b>
+ * Some pieces like the Pawn have different ways to move and to attack.
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class Move 
 {
 	/* Structure */	
@@ -24,9 +32,7 @@ public class Move
 		this.repeat = repeat;
 		this.attack = attack;
 	}
-	public Move(int front, int right) {
-		this(front, right, false, Type.MOVE_AND_ATTACK);
-	}
+	
 	public Move(int front, int right, boolean repeat) {
 		this(front, right, repeat, Type.MOVE_AND_ATTACK);
 	}
@@ -72,34 +78,36 @@ public class Move
 		return (attack == Type.ONLY_ATTACK);
 	}
 	
+	/**
+	 * Check if this movement can be used to attack an ennemy
+	 * @return boolean
+	 */
 	public boolean isAttack() {
 		return (attack == Type.MOVE_AND_ATTACK || attack == Type.ONLY_ATTACK);
 	}
+	
+	/**
+	 * Check if this movement can be used to move to an empty square
+	 * @return boolean
+	 */
 	public boolean isMove() {
 		return (attack == Type.MOVE_AND_ATTACK || attack == Type.ONLY_MOVE);
 	}
-
+	
+	/**
+	 * Check if the two moves are equal
+	 * @param m
+	 * @return boolean
+	 */
 	public boolean equals(Move m) {
 		return (m.front == front && m.right == right);
-	}
-	public int compareTo(Move m) {
-		if(front < m.front)
-			return -1;
-		else if(front > m.front)
-			return 1;
-		else {
-			if(right < m.right)
-				return -1;
-			else if(right > m.right)
-				return 1;
-			else
-				return 0;
-		}
-	}	
+	}		
 
-	public Move times(int n) {
-		return new Move(this.front*n, this.right*n, this.repeat, this.attack);
-	}
+	/**
+	 * Convert the Move to a String in order to print or display it
+	 * @return String
+	 */
+	@Override
 	public String toString() {
 		return front + "/" + right;
 	}

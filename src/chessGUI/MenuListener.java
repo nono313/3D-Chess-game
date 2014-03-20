@@ -1,28 +1,33 @@
 package chessGUI;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-
 import javax.swing.JOptionPane;
 
 import Global.AbstractModel;
 import Global.XmlManager;
 
+/**
+ * Listens for actions on the menu
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class MenuListener implements ActionListener
 {
 	/* Attributes */
-	private static View window;
+	private static AbstractView window;
 	private static AbstractModel model;
 	private static MouseManager controller;
 	private String menuType;
 	
 	/* Constructor(s) */
-	public MenuListener(View window, AbstractModel model, String menuType)
+	public MenuListener(AbstractView window, AbstractModel model, String menuType)
 	{
-		this.window = window;
-		this.model = model;
+		MenuListener.window = window;
+		MenuListener.model = model;
 		this.menuType = menuType;
 	}
 	public MenuListener(String menuType)
@@ -33,7 +38,10 @@ public class MenuListener implements ActionListener
 	public static void setController(MouseManager mouse) {
 		controller = mouse;
 	}
-	static public void restartGame() {		
+	/**
+	 * Reset the whole game, clean the graphical interface and display the newly created game
+	 */
+	static public void restartGame() {
 		window.cleanAttackBoards();
 		window.piecesCleaning();
 		
@@ -44,9 +52,6 @@ public class MenuListener implements ActionListener
 		
 		model.resetPieces();
 		window.refreshDeadPieces();
-		/*window.piecesPlacement();
-		model.setCurrentPlayer(model.getListPlayers().get(0));*/
-		/*window.refreshCurrentPlayer();*/
 		model.resetListPlayers();
 		
 		
@@ -57,6 +62,13 @@ public class MenuListener implements ActionListener
 	}
 	
 	/* ActionListener methods */
+	
+	/**
+	 * If an element of the menu is selecting (key pressing or mouse clicking), this method
+	 * execute the corresponding action.
+	 * @param arg0 : ActionEvent
+	 */
+	@Override
 	public void actionPerformed(ActionEvent arg0) 
 	{		
 		/* gameMenu actions */
@@ -80,7 +92,8 @@ public class MenuListener implements ActionListener
 		/* aboutMenu actions */
 		else if(menuType.equals("rules"))
 		{
-			JOptionPane.showMessageDialog(window, "Read the file Rules.txt", "Rules", JOptionPane.INFORMATION_MESSAGE);
+			/* Should be changed to display directly the rules in a formatted display */
+			JOptionPane.showMessageDialog((Component) window, "Read the file Rules.txt", "Rules", JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
 }

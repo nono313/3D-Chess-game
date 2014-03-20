@@ -11,26 +11,28 @@ import chessGUI.View;
 
 import Players.*;
 
-
+/**
+ * Main class of the game.<br>
+ * This is where the 3 components of the MVC pattern are created and linked together.<br>
+ * If also contains the main() function called at the launch of the program.
+ * 
+ * @author Maxime Bourgeois
+ * @author Nathan Olff
+ *
+ */
 public class Main
 {
 	/* Constructor */
 	public Main() 
 	{	
-		/*List<AbstractPlayer> listPlayers = new ArrayList<AbstractPlayer>();		
-
-		AbstractPlayer player1 = new HumanPlayer();
-		AbstractPlayer player2 = new HumanPlayer();
-		
-		listPlayers.add(player1);
-		listPlayers.add(player2);*/
-		
+	
 		/* Create the blocs */
 		AbstractModel model = new Model();		
 		AbstractView view = new View(model);	
 		
 		MouseManager controller = new MouseManager(model, view);
 		MenuListener.setController(controller);
+		
 		/* Add the MouseListener */
 		view.addMouseListener(controller);
 		
@@ -42,10 +44,8 @@ public class Main
 			view.revalidate();
 			view.setLocationRelativeTo(null);
 			
-			model.setGameOver(false);
 			model.newGame();
-			model.resetListPlayers();
-			model.resetPieces();
+			
 			controller.createPlayers();
 			model.initializePieces();
 			
@@ -54,22 +54,18 @@ public class Main
 		
 			model.setGameOver(false);
 						
-			while(!model.isGameOver() && !model.isStopped())
+			while(!model.isGameOver() && !model.isStopped())	// Main loop of a game
 			{
-				try {
-					Thread.sleep(0);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				/*if(controller.getCurrentPlayer().getClass().equals(BotPlayer.class)) {*/
+				/* 
+				 * If the current player is a bot, we call the play() method.
+				 * The human player is managed directly from the MouseManager
+				 */
 				if(model.getCurrentPlayer() instanceof BotPlayer) {
 					((BotPlayer)model.getCurrentPlayer()).play(model, view, controller, 500);
-					//System.out.println(model.getCurrentPlayer());
 				}
 			}
 			if(model.isStopped()) {
 				awnser = JOptionPane.YES_OPTION;
-				//System.out.println("is stopped");
 			}
 			else {
 				String message = "" + model.getOtherPlayer(model.getCurrentPlayer()).getName() + " won the game !\nCongratulation " + model.getOtherPlayer(model.getCurrentPlayer()).getName() + "\n\nWant to play again ?";
